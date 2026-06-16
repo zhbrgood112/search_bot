@@ -10,7 +10,7 @@ from message_formatter import (
     format_blacklist_message,
     get_chat_name, get_sender_info, get_chat_link
 )
-from message_checker import check_message, highlight_matches
+from message_checker import MessageChecker
 
 class BotHandler:
     def __init__(self, client, settings, blacklist, admin_entity, stats):
@@ -20,28 +20,25 @@ class BotHandler:
         self.admin_entity = admin_entity
         self.stats = stats
         
-        # Для контроля частоты отправки
         self.last_send_time = 0
-        self.min_interval = 10  # Минимум 10 секунд между отправками
+        self.min_interval = 10
         
-        # Кэш для одинаковых сообщений от пользователей
         self.user_message_cache = defaultdict(dict)
-        self.cache_ttl = timedelta(hours=3)  # 3 часа жизни кэша
+        self.cache_ttl = timedelta(hours=3)
         
-        # Кэш чатов
         self.chat_cache = {}
         self.last_chat_update = None
         
-        # Регистрируем обработчики
+        self.accounts_manager = None
+        self.words_manager = None
+        
         self.setup_handlers()
     
     def get_message_hash(self, text, chat_id):
-        """Создает хэш сообщения для сравнения (текст + чат)"""
         normalized = ' '.join(text.lower().split())
         return f"{normalized}|{chat_id}"
     
     def should_forward_message(self, user_id, message_hash):
-        """Проверяет, нужно ли пересылать сообщение"""
         user_cache = self.user_message_cache.get(user_id, {})
         
         if message_hash in user_cache:
@@ -61,7 +58,6 @@ class BotHandler:
         return True
     
     def clean_old_cache(self, user_id):
-        """Очищает старые записи пользователя"""
         if user_id in self.user_message_cache:
             now = datetime.now()
             to_delete = []
@@ -76,60 +72,40 @@ class BotHandler:
                 del self.user_message_cache[user_id]
     
     def clean_all_cache(self):
-        """Очищает весь кэш"""
         self.user_message_cache.clear()
         print("🗑 Кэш сообщений очищен")
     
     async def update_chat_cache(self):
-        """Обновляет кэш чатов (ручной вызов)"""
         try:
             print(f"🔄 Обновление списка чатов...")
-            
             dialogs = await self.client.get_dialogs()
             
-            old_count = len(self.chat_cache)
-            added_chats = []
+            self.chat_cache = {}
             
             for dialog in dialogs:
                 chat = dialog.entity
-                chat_id = chat.id
-                
-                if chat_id not in self.chat_cache:
-                    self.chat_cache[chat_id] = chat
-                    chat_name = get_chat_name(chat)
-                    added_chats.append(chat_name)
+                self.chat_cache[chat.id] = chat
             
             self.last_chat_update = datetime.now()
             
-            if added_chats:
-                print(f"✅ Добавлено новых чатов: {len(added_chats)}")
-                for name in added_chats[:5]:
-                    print(f"   • {name}")
-                if len(added_chats) > 5:
-                    print(f"   ... и еще {len(added_chats)-5}")
-                return f"✅ Обновлено! Добавлено {len(added_chats)} новых чатов. Всего: {len(self.chat_cache)}"
-            else:
-                print(f"✅ Чаты обновлены. Всего: {len(self.chat_cache)} чатов (новых нет)")
-                return f"✅ Обновлено! Всего чатов: {len(self.chat_cache)} (новых не найдено)"
+            groups = sum(1 for d in dialogs if d.is_group)
+            channels = sum(1 for d in dialogs if d.is_channel)
+            users = sum(1 for d in dialogs if d.is_user)
+            
+            print(f"✅ Обновлено! Всего чатов: {len(dialogs)}")
+            return f"✅ Обновлено!\n📊 Всего чатов: {len(dialogs)}\n👥 Групп: {groups}\n📢 Каналов: {channels}\n👤 Личных: {users}"
             
         except Exception as e:
-            print(f"❌ Ошибка обновления кэша чатов: {e}")
+            print(f"❌ Ошибка обновления кэша: {e}")
             return f"❌ Ошибка: {e}"
     
-    async def get_chat_entity(self, chat_id):
-        """Получает сущность чата из кэша"""
-        if chat_id in self.chat_cache:
-            return self.chat_cache[chat_id]
-        return None
-    
     async def rate_limited_send(self, entity, message):
-        """Отправка с ограничением частоты"""
         now = datetime.now().timestamp()
         time_since_last = now - self.last_send_time
         
         if time_since_last < self.min_interval:
             wait_time = self.min_interval - time_since_last
-            print(f"⏳ Ожидание {wait_time:.1f} сек перед следующей отправкой...")
+            print(f"⏳ Ожидание {wait_time:.1f} сек...")
             await asyncio.sleep(wait_time)
         
         result = await self.client.send_message(entity, message)
@@ -137,7 +113,6 @@ class BotHandler:
         return result
     
     async def rate_limited_send_file(self, entity, file, caption=""):
-        """Отправка файла с ограничением частоты"""
         now = datetime.now().timestamp()
         time_since_last = now - self.last_send_time
         
@@ -151,7 +126,6 @@ class BotHandler:
         return result
     
     def setup_handlers(self):
-        """Настраивает обработчики событий"""
         
         @self.client.on(events.NewMessage(chats=self.admin_entity))
         async def admin_commands(event):
@@ -161,7 +135,7 @@ class BotHandler:
             text = event.raw_text.strip().lower()
             reply_msg = await event.get_reply_message() if event.is_reply else None
             
-            # ===== БЛОКИРОВКА ОТВЕТОМ НА СООБЩЕНИЕ =====
+            # ===== БЛОКИРОВКА ОТВЕТОМ =====
             
             if text == "/block_user" and reply_msg:
                 user_id = await self.extract_user_id_from_reply(reply_msg)
@@ -171,75 +145,109 @@ class BotHandler:
                     if user_id in self.user_message_cache:
                         del self.user_message_cache[user_id]
                 else:
-                    await event.reply("❌ Не удалось определить пользователя. Используйте: /block_user ID")
+                    await event.reply("❌ Не удалось определить пользователя")
                 return
             
-            elif text == "/unblock_user" and reply_msg:
+            if text == "/unblock_user" and reply_msg:
                 user_id = await self.extract_user_id_from_reply(reply_msg)
                 if user_id:
                     result, msg = self.blacklist.unblock_user(user_id)
                     await event.reply(msg)
                 else:
-                    await event.reply("❌ Не удалось определить пользователя. Используйте: /unblock_user ID")
+                    await event.reply("❌ Не удалось определить пользователя")
                 return
             
-            elif text == "/block_chat" and reply_msg:
-                chat_id = await self.extract_chat_id_from_reply(reply_msg, event)
+            if text == "/block_chat" and reply_msg:
+                chat_id = await self.extract_chat_id_from_reply(reply_msg)
                 if chat_id:
                     result, msg = self.blacklist.block_chat(chat_id)
                     await event.reply(msg)
                 else:
-                    await event.reply("❌ Не удалось определить чат. Используйте: /block_chat ID")
+                    await event.reply("❌ Не удалось определить чат")
                 return
             
-            elif text == "/unblock_chat" and reply_msg:
-                chat_id = await self.extract_chat_id_from_reply(reply_msg, event)
+            if text == "/unblock_chat" and reply_msg:
+                chat_id = await self.extract_chat_id_from_reply(reply_msg)
                 if chat_id:
                     result, msg = self.blacklist.unblock_chat(chat_id)
                     await event.reply(msg)
                 else:
-                    await event.reply("❌ Не удалось определить чат. Используйте: /unblock_chat ID")
+                    await event.reply("❌ Не удалось определить чат")
                 return
             
-            # ===== БЛОКИРОВКА С УКАЗАНИЕМ ID =====
+            # ===== БЛОКИРОВКА ПО ID =====
             
-            elif text.startswith("/block_user "):
+            if text.startswith("/block_user "):
                 await self.block_user_by_id(text, event)
                 return
             
-            elif text.startswith("/unblock_user "):
+            if text.startswith("/unblock_user "):
                 await self.unblock_user_by_id(text, event)
                 return
             
-            elif text.startswith("/block_chat "):
+            if text.startswith("/block_chat "):
                 await self.block_chat_by_id(text, event)
                 return
             
-            elif text.startswith("/unblock_chat "):
+            if text.startswith("/unblock_chat "):
                 await self.unblock_chat_by_id(text, event)
                 return
             
-            # ===== УПРАВЛЕНИЕ ЧАТАМИ =====
+            # ===== ОБНОВЛЕНИЕ ЧАТОВ =====
             
-            # Принудительно обновить чаты
-            elif text == "/update_chats":
-                msg = await self.update_chat_cache()
-                await event.reply(msg)
+            if text == "/update_chats":
+                await event.reply("🔄 Обновляю список чатов...")
+                result = await self.update_chat_cache()
+                await event.reply(result)
                 return
             
-            # Показать список чатов
-            elif text == "/list_chats":
-                await self.send_chat_list(event)
+            # ===== ОСТАЛЬНЫЕ КОМАНДЫ =====
+            
+            if text in ["/menu", "меню", "/start"]:
+                await self.send_menu(event)
                 return
             
-            # ===== УПРАВЛЕНИЕ КЭШЕМ =====
+            if text in ["/settings", "настройки"]:
+                await self.send_settings(event)
+                return
             
-            elif text == "/clear_cache":
+            if text in ["/blacklist", "blacklist", "/bl", "чс"]:
+                await self.send_blacklist(event)
+                return
+            
+            if text in ["/toggle", "/onoff"]:
+                status = self.settings.toggle_active()
+                await event.reply("✅ Поиск ВКЛЮЧЕН" if status else "⏸ Поиск ВЫКЛЮЧЕН")
+                await self.send_settings(event)
+                return
+            
+            if text == "/media":
+                status = self.settings.toggle_media()
+                await event.reply("✅ Медиа ВКЛЮЧЕНА" if status else "⏸ Медиа ВЫКЛЮЧЕНА")
+                return
+            
+            if text in ["/stats", "статистика"]:
+                await self.send_stats(event)
+                return
+            
+            if text == "/reset":
+                self.stats["total"] = 0
+                self.stats["last_reset"] = datetime.now()
+                self.stats["pairs"] = {}
+                self.clean_all_cache()
+                await event.reply("📊 Статистика и кэш сброшены")
+                return
+            
+            if text in ["/help", "help"]:
+                await self.send_help(event)
+                return
+            
+            if text == "/clear_cache":
                 self.clean_all_cache()
                 await event.reply("🗑 Кэш одинаковых сообщений очищен")
                 return
             
-            elif text == "/cache_stats":
+            if text == "/cache_stats":
                 total_users = len(self.user_message_cache)
                 total_messages = sum(len(msgs) for msgs in self.user_message_cache.values())
                 await event.reply(f"📊 **Статистика кэша:**\n\n"
@@ -247,41 +255,8 @@ class BotHandler:
                                  f"💬 Запомнено сообщений: {total_messages}\n"
                                  f"⏰ TTL: 3 часа")
                 return
-            
-            # ===== ОСТАЛЬНЫЕ КОМАНДЫ =====
-            
-            elif text in ["/menu", "меню", "/start"]:
-                await self.send_menu(event)
-            
-            elif text in ["/settings", "настройки"]:
-                await self.send_settings(event)
-            
-            elif text in ["/blacklist", "blacklist", "/bl", "чс"]:
-                await self.send_blacklist(event)
-            
-            elif text in ["/toggle", "/onoff"]:
-                status = self.settings.toggle_active()
-                await event.reply("✅ Поиск ВКЛЮЧЕН" if status else "⏸ Поиск ВЫКЛЮЧЕН")
-                await self.send_settings(event)
-            
-            elif text == "/media":
-                status = self.settings.toggle_media()
-                await event.reply("✅ Медиа ВКЛЮЧЕНА" if status else "⏸ Медиа ВЫКЛЮЧЕНА")
-            
-            elif text in ["/stats", "статистика"]:
-                await self.send_stats(event)
-            
-            elif text == "/reset":
-                self.stats["total"] = 0
-                self.stats["last_reset"] = datetime.now()
-                self.stats["pairs"] = {}
-                self.clean_all_cache()
-                await event.reply("📊 Статистика и кэш сброшены")
-            
-            elif text in ["/help", "help"]:
-                await self.send_help(event)
         
-        # ОСНОВНОЙ ОБРАБОТЧИК СООБЩЕНИЙ
+        # ===== ОСНОВНОЙ ОБРАБОТЧИК СООБЩЕНИЙ =====
         @self.client.on(events.NewMessage)
         async def search_handler(event):
             await asyncio.sleep(10)
@@ -295,17 +270,15 @@ class BotHandler:
             if event.chat_id == self.admin_entity.id:
                 return
             
-            # Проверяем, есть ли чат в кэше
-            chat = await self.get_chat_entity(event.chat_id)
-            if chat is None:
-                # Если чата нет в кэше, пропускаем (пользователь должен обновить вручную)
-                print(f"⚠️ Чат {event.chat_id} не найден в кэше. Используйте /update_chats")
+            try:
+                chat = await event.get_chat()
+            except Exception as e:
+                print(f"⚠️ Ошибка получения чата: {e}")
                 return
             
             sender = await event.get_sender()
             message = event.message
             
-            # Проверка блокировок
             if self.blacklist.is_chat_blocked(event.chat_id):
                 return
             
@@ -316,7 +289,16 @@ class BotHandler:
             if not text and not message.media:
                 return
             
-            is_match, word1, word2, matches = check_message(text)
+            # ИСПОЛЬЗУЕМ КЛАСС MessageChecker
+            if self.words_manager:
+                checker = MessageChecker(self.words_manager)
+                is_match, word1, word2, matches = checker.check_message(text)
+            else:
+                # Если words_manager нет - создаем временный
+                from words_manager import WordsManager
+                temp_words = WordsManager()
+                checker = MessageChecker(temp_words)
+                is_match, word1, word2, matches = checker.check_message(text)
             
             if is_match:
                 user_id = sender.id if sender else 0
@@ -338,7 +320,11 @@ class BotHandler:
                 sender_id = sender.id if sender else 0
                 chat_link = get_chat_link(chat, message)
                 
-                highlighted_text = highlight_matches(text, matches) if text else "[Медиафайл]"
+                # Подсвечиваем найденные слова
+                if self.words_manager:
+                    highlighted_text = checker.highlight_matches(text, matches) if text else "[Медиафайл]"
+                else:
+                    highlighted_text = text if text else "[Медиафайл]"
                 
                 forward_text = format_forward_message(
                     chat_name=chat_name,
@@ -368,60 +354,9 @@ class BotHandler:
                 except Exception as e:
                     print(f"❌ Ошибка: {e}")
     
-    # ===== СПИСОК ЧАТОВ =====
-    
-    async def send_chat_list(self, event):
-        """Отправляет список чатов"""
-        if not self.chat_cache:
-            await event.reply("🔄 Кэш чатов пуст. Используйте /update_chats")
-            return
-        
-        chats = list(self.chat_cache.values())
-        
-        if not chats:
-            await event.reply("❌ Чаты не найдены")
-            return
-        
-        groups = []
-        channels = []
-        users = []
-        
-        for chat in chats:
-            chat_name = get_chat_name(chat)
-            chat_id = chat.id
-            
-            if hasattr(chat, 'megagroup') and chat.megagroup:
-                groups.append(f"  • {chat_name} (ID: {chat_id})")
-            elif hasattr(chat, 'group') and chat.group:
-                groups.append(f"  • {chat_name} (ID: {chat_id})")
-            elif hasattr(chat, 'channel') and chat.channel:
-                channels.append(f"  • {chat_name} (ID: {chat_id})")
-            else:
-                users.append(f"  • {chat_name} (ID: {chat_id})")
-        
-        result = f"""
-📋 **СПИСОК ЧАТОВ** ({len(chats)} всего)
-
-👥 **Группы ({len(groups)}):**
-{chr(10).join(groups[:20]) if groups else '  • нет'}
-{f'  ... и еще {len(groups)-20}' if len(groups) > 20 else ''}
-
-📢 **Каналы ({len(channels)}):**
-{chr(10).join(channels[:20]) if channels else '  • нет'}
-{f'  ... и еще {len(channels)-20}' if len(channels) > 20 else ''}
-
-👤 **Личные чаты ({len(users)}):**
-{chr(10).join(users[:10]) if users else '  • нет'}
-{f'  ... и еще {len(users)-10}' if len(users) > 10 else ''}
-
-💡 /update_chats - обновить список чатов
-"""
-        await event.reply(result[:4000])
-    
-    # ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
+    # ===== ФУНКЦИИ ДЛЯ ИЗВЛЕЧЕНИЯ ID =====
     
     async def extract_user_id_from_reply(self, reply_msg):
-        """Извлекает ID пользователя из ответного сообщения"""
         try:
             username_match = re.search(r'@(\w+)', reply_msg.raw_text)
             if username_match:
@@ -446,8 +381,7 @@ class BotHandler:
             print(f"Ошибка извлечения ID пользователя: {e}")
             return None
     
-    async def extract_chat_id_from_reply(self, reply_msg, event):
-        """Извлекает ID чата из ответного сообщения"""
+    async def extract_chat_id_from_reply(self, reply_msg):
         try:
             id_match = re.search(r'Chat ID:\s*([-\d]+)', reply_msg.raw_text)
             if id_match:
@@ -460,6 +394,8 @@ class BotHandler:
         except Exception as e:
             print(f"Ошибка извлечения ID чата: {e}")
             return None
+    
+    # ===== ФУНКЦИИ БЛОКИРОВКИ =====
     
     async def block_user_by_id(self, text, event):
         try:

@@ -1,0 +1,520 @@
+{
+  "users": [
+    {
+      "id": 8529868979,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:32:31"
+    },
+    {
+      "id": 6581984946,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:32:39"
+    },
+    {
+      "id": 613883313,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:32:48"
+    },
+    {
+      "id": 8087960381,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:34:13"
+    },
+    {
+      "id": 8916886322,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:34:24"
+    },
+    {
+      "id": 8313086293,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:34:27"
+    },
+    {
+      "id": 8233926688,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:34:39"
+    },
+    {
+      "id": 8623776198,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:34:43"
+    },
+    {
+      "id": 8659670400,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:35:07"
+    },
+    {
+      "id": 8787496396,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:36:42"
+    },
+    {
+      "id": 8572455368,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:36:51"
+    },
+    {
+      "id": 7449848051,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:37:30"
+    },
+    {
+      "id": 8739950538,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:39:02"
+    },
+    {
+      "id": 7566212415,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:39:14"
+    },
+    {
+      "id": 8018459173,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:39:32"
+    },
+    {
+      "id": 8205879522,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:40:06"
+    },
+    {
+      "id": 8901009708,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:54:00"
+    },
+    {
+      "id": 8229153333,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:54:11"
+    },
+    {
+      "id": 7435143,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:54:24"
+    },
+    {
+      "id": 8887824472,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:55:36"
+    },
+    {
+      "id": 5813028140,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 16:56:14"
+    },
+    {
+      "id": 8206706574,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:03:34"
+    },
+    {
+      "id": 5771254191,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:03:48"
+    },
+    {
+      "id": 8468992202,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:07:38"
+    },
+    {
+      "id": 8347185896,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:07:42"
+    },
+    {
+      "id": 7678299943,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:09:53"
+    },
+    {
+      "id": 8356054557,
+      "username": null,
+      "name": null,
+      "reason": null,
+      "blocked_at": "16.06.2026 17:09:56"
+    }
+  ],
+  "chats": [],
+  "blocked_messages": [
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8529868979,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:32:31"
+      },
+      "time": "16.06.2026 16:32:31"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 6581984946,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:32:39"
+      },
+      "time": "16.06.2026 16:32:39"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 613883313,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:32:48"
+      },
+      "time": "16.06.2026 16:32:48"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8087960381,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:34:13"
+      },
+      "time": "16.06.2026 16:34:13"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8916886322,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:34:24"
+      },
+      "time": "16.06.2026 16:34:24"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8313086293,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:34:27"
+      },
+      "time": "16.06.2026 16:34:27"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8233926688,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:34:39"
+      },
+      "time": "16.06.2026 16:34:39"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8623776198,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:34:43"
+      },
+      "time": "16.06.2026 16:34:43"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8659670400,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:35:07"
+      },
+      "time": "16.06.2026 16:35:07"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8787496396,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:36:42"
+      },
+      "time": "16.06.2026 16:36:42"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8572455368,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:36:51"
+      },
+      "time": "16.06.2026 16:36:51"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 7449848051,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:37:30"
+      },
+      "time": "16.06.2026 16:37:30"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8739950538,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:39:02"
+      },
+      "time": "16.06.2026 16:39:02"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 7566212415,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:39:14"
+      },
+      "time": "16.06.2026 16:39:14"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8018459173,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:39:32"
+      },
+      "time": "16.06.2026 16:39:32"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8205879522,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:40:06"
+      },
+      "time": "16.06.2026 16:40:06"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8901009708,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:54:00"
+      },
+      "time": "16.06.2026 16:54:00"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8229153333,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:54:11"
+      },
+      "time": "16.06.2026 16:54:11"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 7435143,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:54:24"
+      },
+      "time": "16.06.2026 16:54:24"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8887824472,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:55:36"
+      },
+      "time": "16.06.2026 16:55:36"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 5813028140,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 16:56:14"
+      },
+      "time": "16.06.2026 16:56:14"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8206706574,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:03:34"
+      },
+      "time": "16.06.2026 17:03:34"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 5771254191,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:03:48"
+      },
+      "time": "16.06.2026 17:03:48"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8468992202,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:07:38"
+      },
+      "time": "16.06.2026 17:07:38"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8347185896,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:07:42"
+      },
+      "time": "16.06.2026 17:07:42"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 7678299943,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:09:53"
+      },
+      "time": "16.06.2026 17:09:53"
+    },
+    {
+      "type": "user",
+      "action": "block",
+      "target": {
+        "id": 8356054557,
+        "username": null,
+        "name": null,
+        "reason": null,
+        "blocked_at": "16.06.2026 17:09:56"
+      },
+      "time": "16.06.2026 17:09:56"
+    }
+  ]
+}
